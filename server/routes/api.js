@@ -1,5 +1,5 @@
 const express = require("express");
-
+const jwt = require("jsonwebtoken");
 const router = express.Router();
 
 const User = require("../models/user");
@@ -40,7 +40,14 @@ router.post("/register", async (req, res) => {
     let userData = req.body;
     let user = new User(userData);
     const registeredUser = await user.save();
-    res.status(200).send(registeredUser);
+    let payload = { subject: registeredUser._id };
+    let token = jwt.sign(payload, "secretKey");
+    res.status(200).send({
+      message: "success",
+      user: registeredUser,
+      token: token,
+    });
+    // res.status(200).send(registeredUser);
   } catch (error) {
     res.status(500).send(error);
   }
@@ -73,9 +80,27 @@ router.post("/login", async (req, res) => {
       res.status(401).send("Invalid password");
       return;
     }
-    res.status(200).send(user);
+    let payload = { subject: user._id };
+    let token = jwt.sign(payload, "secretKey");
+    res.status(200).send({
+      message: `${user.email} successfully logged in..`,
+      user: user,
+      token: token,
+    });
   } catch (error) {
     // Handle any errors
+    res.status(500).send(error);
+  }
+});
+
+router.get("/getallusers", async (req, res) => {
+  try {
+    const allusers = await user.find({});
+    res.status(200).json({
+      success: true,
+      data: allusers,
+    });
+  } catch (error) {
     res.status(500).send(error);
   }
 });
@@ -226,52 +251,6 @@ router.get("/special", (req, res) => {
       description: "Panel discussion on renewable energy and sustainability.",
       attendees: ["Emma Taylor", "James Brown", "Ella Garcia"],
       organizer: "GreenTech Alliance",
-    },
-    {
-      id: 6,
-      title: "Networking Event",
-      date: "2024-09-15",
-      location: "Boston",
-      description:
-        "Opportunity to network with professionals from various industries.",
-      attendees: ["Liam Smith", "Ava Johnson", "Noah Martinez"],
-      organizer: "Business Connect",
-    },
-    {
-      id: 7,
-      title: "Product Launch",
-      date: "2024-10-20",
-      location: "Austin",
-      description: "Launch event for a new innovative product.",
-      attendees: ["Sophie Miller", "William Anderson", "Isabella Wilson"],
-      organizer: "Tech Innovations Ltd.",
-    },
-    {
-      id: 8,
-      title: "Training Session",
-      date: "2024-11-05",
-      location: "Miami",
-      description: "Training session on project management best practices.",
-      attendees: ["Lucas Martinez", "Avery Brown", "Mia Taylor"],
-      organizer: "Project Management Institute",
-    },
-    {
-      id: 9,
-      title: "Industry Summit",
-      date: "2024-12-10",
-      location: "Denver",
-      description: "Gathering of industry leaders to discuss future trends.",
-      attendees: ["Jack Wilson", "Chloe Davis", "Ethan Garcia"],
-      organizer: "Industry Leaders Forum",
-    },
-    {
-      id: 10,
-      title: "Expo",
-      date: "2025-01-15",
-      location: "Orlando",
-      description: "Exhibition showcasing the latest technology innovations.",
-      attendees: ["Harper Johnson", "Logan Brown", "Luna Martinez"],
-      organizer: "Tech Expo Inc.",
     },
   ];
   res.json(events);

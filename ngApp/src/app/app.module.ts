@@ -8,24 +8,28 @@ import { RegisterComponent } from './register/register.component';
 import { LoginComponent } from './login/login.component';
 import { EventsComponent } from './events/events.component';
 import { SpecialEventsComponent } from './special-events/special-events.component';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthService } from './auth.service';
-
+import { EventService } from './event.service';
+import { TokenInterceptorService } from './token-interceptor.service';
 @NgModule({
   declarations: [
     AppComponent,
     RegisterComponent,
     LoginComponent,
     EventsComponent,
-    SpecialEventsComponent
+    SpecialEventsComponent,
   ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    FormsModule,
-    HttpClientModule
+  imports: [BrowserModule, AppRoutingModule, FormsModule, HttpClientModule],
+  providers: [
+    AuthService,
+    EventService,
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: TokenInterceptorService,
+      multi: true,
+    },
   ],
-  providers: [AuthService],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}
